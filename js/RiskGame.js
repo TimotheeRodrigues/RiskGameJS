@@ -10,12 +10,13 @@
 //##############################
 //BEGIN class RiskGame #########
 /**
- * class RiskGame
+ * @class RiskGame
  * @param size
  * @constructor
  */
 function RiskGame(size){
     RiskGame.instance = null;
+    RiskGame.riskMap = null;
 
     /**
      * @method startGame()
@@ -25,35 +26,35 @@ function RiskGame(size){
      */
     this.startGame = function(){
         //draw a new Map and add a button to end turn
-        riskMap = new Map(10);
-        $('#riskgame').append(riskMap.drawMap())
+        RiskGame.riskMap = new Map(10);
+        $('#riskgame').append(RiskGame.riskMap.drawMap())
                       .append('<button id="end_turn" type="button" ' +
                                 'class="btn btn-primary">END TURN</button>');
         $('#end_turn').click(function(){RiskGame.getInstance().newTurn();});
 
         //place players
-        riskMap.placePlayer('player');
-        riskMap.placePlayer('cpu');
+        RiskGame.riskMap.placePlayer('player');
+        RiskGame.riskMap.placePlayer('cpu');
 
         this.newTurn();
     };//startGame()
 
+
     /**
-     * method newTurn()
+     * @method newTurn()
+     *
+     * @ref startGame()
      */
     this.newTurn = function(){
-        var click = false;
-        $('.player').click(function(){
-            var id = $(this).attr('id');
-            if(!click) {
-                click = true;
-                console.log(id[0] + '\t' + id[1]);
-                riskMap.onFirstClick(id[0],id[1]);
-            }else{
-                click = false;
-                riskMap.setToDefault();
-            }
-        });
+        RiskGame.riskMap.click = false;
+        RiskGame.riskMap.setToDefault();
+        //TODO erase this map and draw a new map recieved from the server
+
+        $('.attacked').attr('class', 'player');//TODO just to test
+        //adds a clickListener to the .player buttons
+        $('.player')
+            .data('map-obj', RiskGame.riskMap)
+            .click(RiskGame.riskMap.clickListener);
     };//newTurn()
 
 }//RiskGame()
@@ -67,7 +68,7 @@ RiskGame.getInstance = function(size){
     if(null == RiskGame.instance)
         RiskGame.instance = new RiskGame(size);
     return this.instance;
-};
+};//getInstance()
 
 //END class RiskGame ###########
 //##############################
@@ -82,16 +83,25 @@ RiskGame.getInstance = function(size){
 //BEGIN class Map ##############
 
 /**
- * class Map
+ * @class Map
  * @param size
  * @constructor
  */
 function Map(size){
-    this.grid = [];
     this.size = size;
     this.higlighted = [];
+
+    this.changes = {
+
+    };
+
+    this.click = false;
+
+
+
+
     /**
-     * method: drawMap()
+     * @method: drawMap()
      * @returns {*|jQuery|HTMLElement}
      */
     this.drawMap = function(){
@@ -108,20 +118,20 @@ function Map(size){
      * @param i  (the line number)
      * @returns {*|jQuery|HTMLElement}
      *
-     * function called in drawMap()
+     * @ref drawMap()
      */
     this.createLine = function(i){
         var newLine = $('<tr/>');
         for(var j = 0; j < this.size; ++j) {
             //create td with id = "+i+j+"
-            newLine.append($('<td class="neutral" id="'+i+j+'">').html('2'));
+            newLine.append($('<td class="neutral" id="'+i+'-'+j+'">').html('2'));
         }
         return newLine;
     };
 
 
     /**
-     * method: placePlayer(playerType)
+     * @method: placePlayer(playerType)
      * @param playerType  (could be : 'player', 'cpu')
      *
      * Place the player randomly
@@ -129,16 +139,36 @@ function Map(size){
     this.placePlayer = function(playerType) {
         var randomLine = Math.floor((Math.random() * this.size));
         var randomColumn = Math.floor((Math.random() * this.size));
-        var id = '' + randomLine + randomColumn;
-        $('#' + id).attr('class', playerType);
+        var id = '#' + randomLine + '-' + randomColumn;
+        $(id).attr('class', playerType);
     };
+
+
+    /**
+     * @method clickListener()
+     * @ref RiskGame.newTurn()
+     */
+    this.clickListener = function(){
+        var id = $(this).attr('id');
+        id = id.split('-');
+        var map = $(this).data('map-obj'); //map is the current instance of Map
+        console.log(map.click);
+        if(!map.click) {
+            map.click = true;
+            map.onFirstClick(id[0],id[1]);
+        }else{
+            map.click = false;
+            map.setToDefault();
+        }
+    };
+
 
     /**
      * method: onFirstClick(line, column)
      * @param line
      * @param column
      *
-     * function called when the square is clicked for the first time
+     * @ref clickListener
      */
     this.onFirstClick = function(line,column){
         var i = parseInt(line);
@@ -159,31 +189,58 @@ function Map(size){
     };
 
     /**
-     * method: highlight(line, column)
+     * @method highlight(line, column)
      * @param line
      * @param column
      */
     this.highlight = function(line, column){
-        var id = '' + line + column;
-        $('#'+id).css('opacity', '0.5');
-        $('#'+id).click(function(){
-            $('#' + id).attr('class', 'player');
-            //this.setToDefault(); ToDo write a new function conquer()
-        });
+        var id = '#' + line + '-' + column;
+        $(id)
+            .css('opacity', '0.5')
+            .unbind('click')
+            .data('pos-line', line)
+            .data('pos-column', column)
+            .data('current-obj', this)
+            .click(this.conquer);
         this.higlighted.push(id);
-    };
+    };//highlight(line, column)
+
 
     /**
-     * method: setToDefault()
+     * @method setToDefault()
+     * @ref conquer(), clickListener()
      */
     this.setToDefault = function(){
-        for(i=0; i < this.higlighted.length; ++i){
+        for(var i=0; i < this.higlighted.length; ++i){
             var id = this.higlighted[i];
-            $('#'+ id).css('opacity', '');
-            $('#'+ id).unbind('click');
+            $(id)
+                .css('opacity', '')
+                .unbind('click');
         }
-        this.higlighted = [];
-    }
+        this.higlighted = []; //initialize the array
+        $('.player')
+            .unbind('click')
+            .click(this.clickListener);
+    };//setToDefault()
+
+    /**
+     * @method conquer()
+     * @ref highlight(line, column)
+     *
+     * @note   Should add the territory that we want to conquer in an array.
+     *         This array will be sent to the server when END TURN is called.
+     *         The server will return the state of the new map.
+     */
+    this.conquer = function(){
+        var line = $(this).data('pos-line');
+        var column = $(this).data('pos-column');
+        var obj = $(this).data('current-obj');
+        obj.setToDefault();
+        $('#' + line + '-' + column)
+            .attr('class', 'attacked')
+            .unbind('click');
+
+    };//conquer()
 }
 //END class Map ################
 //##############################

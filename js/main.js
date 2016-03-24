@@ -51,6 +51,14 @@ $(document).ready(function() {
 					//afficher un message de bienvenue
 					$('#message-content').html(data.message);
 					$('#message').slideDown();
+					$('#riskgame').append('<button id="start-btn" ' +
+						'					type="button" ' +
+						'					class="btn btn-primary">START GAME</button>');
+					$('#start-btn').click(function(){
+						$(this).hide();
+						var riskGame = RiskGame.getInstance(10);
+						riskGame.startGame();
+					});//Risk started
 				}
 		    },
             error: function() {
@@ -91,11 +99,5 @@ $(document).ready(function() {
 		$(this).hide();
         return false;
 	});
-
-	$('#start-btn').click(function(){
-		$(this).hide();
-		var riskGame = RiskGame.getInstance(10);
-		riskGame.startGame();
-	});//Risk started
 
 });
