@@ -1,0 +1,47 @@
+
+
+/* ==========================================================================
+   Author's custom styles
+   ========================================================================== */
+
+#map td {
+    height: 50px;
+    width: 50px;
+    border-width: 2px;
+    border-color: #333;
+    border-style: solid;
+    text-align: center;
+}
+
+.empty {
+    background-color: rgb(25, 25, 25);
+}
+
+.neutral {
+    background-color: gainsboro;
+}
+
+.player {
+    background-color: #2e6da4;
+}
+/* * /
+.player:hover {
+    opacity: 0.8;
+}
+/* */
+.cpu {
+    background-color: #ac2925;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
