@@ -4,7 +4,7 @@ $(document).ready(function() {
 	//et affiche le bouton LOGIN/LOGOUT
 	$.ajax({
 		method: "get",
-	    url: "json_est_connecte.php",	    
+	    url: "json_is_connected.php",
 		dataType: 'json',
 	    success: function(data) {
 		    if (data.est_connecte) {

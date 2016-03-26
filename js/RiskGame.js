@@ -43,7 +43,7 @@ function RiskGame(size){
     /**
      * @method newTurn()
      *
-     * @ref startGame()
+     * @see startGame()
      */
     this.newTurn = function(){
         RiskGame.riskMap.click = false;
@@ -118,7 +118,7 @@ function Map(size){
      * @param i  (the line number)
      * @returns {*|jQuery|HTMLElement}
      *
-     * @ref drawMap()
+     * @see drawMap()
      */
     this.createLine = function(i){
         var newLine = $('<tr/>');
@@ -146,7 +146,7 @@ function Map(size){
 
     /**
      * @method clickListener()
-     * @ref RiskGame.newTurn()
+     * @see RiskGame.newTurn()
      */
     this.clickListener = function(){
         var id = $(this).attr('id');
@@ -168,7 +168,7 @@ function Map(size){
      * @param line
      * @param column
      *
-     * @ref clickListener
+     * @see clickListener
      */
     this.onFirstClick = function(line,column){
         var i = parseInt(line);
@@ -208,7 +208,7 @@ function Map(size){
 
     /**
      * @method setToDefault()
-     * @ref conquer(), clickListener()
+     * @see conquer(), clickListener()
      */
     this.setToDefault = function(){
         for(var i=0; i < this.higlighted.length; ++i){
@@ -225,7 +225,7 @@ function Map(size){
 
     /**
      * @method conquer()
-     * @ref highlight(line, column)
+     * @see highlight(line, column)
      *
      * @note   Should add the territory that we want to conquer in an array.
      *         This array will be sent to the server when END TURN is called.
