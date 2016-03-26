@@ -4,7 +4,7 @@ $(document).ready(function() {
 	//et affiche le bouton LOGIN/LOGOUT
 	$.ajax({
 		method: "get",
-	    url: "json_is_connected.php",
+	    url: "php/json_is_connected.php",
 		dataType: 'json',
 	    success: function(data) {
 		    if (data.est_connecte) {
@@ -19,8 +19,7 @@ $(document).ready(function() {
 			}
 	    },
         error: function() {
-	        alert('error');
-	        //TODO faire un fichier erreur.php
+	        alert('error Login/Logout');
         }
     });
 
@@ -62,8 +61,7 @@ $(document).ready(function() {
 				}
 		    },
             error: function() {
-		        alert('error');
-		        //TODO faire un fichier erreur.php
+		        alert('error form-login');
 	        }
         });
 		$(this).hide();
@@ -92,8 +90,7 @@ $(document).ready(function() {
 				}
 		    },
             error: function() {
-		        alert('error');
-		        //TODO faire un fichier erreur.php
+		        alert('error form-logout');
 	        }
         });
 		$(this).hide();
