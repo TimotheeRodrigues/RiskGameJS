@@ -17,11 +17,18 @@ class Territory {
         $this->state = 'in_peace';
     }
 
+    function changeOwner($player){
+        if(!isset($player)){
+            echo "Error [Territory.php]: $player";
+        }
+        $this->owner = $player;
+    }
+
     function getOwner(){
         return $this->owner;
     }
 
-    function getArmiesNbr(){
-        return $this->armiesNbr;
+    function getVars(){
+        return get_object_vars($this);
     }
 }

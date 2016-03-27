@@ -55,7 +55,7 @@ $(document).ready(function() {
 						'					class="btn btn-primary">START GAME</button>');
 					$('#start-btn').click(function(){
 						$(this).hide();
-						var riskGame = RiskGame.getInstance(10);
+						var riskGame = RiskGame.getInstance();
 						riskGame.startGame();
 					});//Risk started
 				}

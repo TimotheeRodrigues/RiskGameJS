@@ -14,7 +14,7 @@
  * @param size
  * @constructor
  */
-function RiskGame(size){
+function RiskGame(){
     RiskGame.instance = null;
     RiskGame.riskMap = null;
 
@@ -22,21 +22,38 @@ function RiskGame(size){
      * @method startGame()
      *
      * Function called when START GAME is called.
-     * It draws a new map, adds a button to end turn, and places players.
+     * ask server to return a map and draw this new map
      */
     this.startGame = function(){
-        //draw a new Map and add a button to end turn
-        RiskGame.riskMap = new Map(10);
-        $('#riskgame').append(RiskGame.riskMap.drawMap())
-                      .append('<button id="end_turn" type="button" ' +
-                                'class="btn btn-primary">END TURN</button>');
-        $('#end_turn').click(function(){RiskGame.getInstance().newTurn();});
+        $.ajax({
+            method: 'post',
+            url: 'php/createGame.php',
+            dataType: 'json',
+            success: function(data){
+                if(typeof(data.size) == 'undefined'){
+                    alert('error data.size');
+                }
+                else if(typeof(data.jsonmap) == 'undefined'){
+                    alert('error data.size');
+                }
+                else{
+                    RiskGame.riskMap = new Map(data.size);
 
-        //place players
-        RiskGame.riskMap.placePlayer('player');
-        RiskGame.riskMap.placePlayer('cpu');
+                    $('#riskgame').append(RiskGame.riskMap.drawMap(data.jsonmap))
+                        .append('<button id="end_turn" type="button" ' +
+                            'class="btn btn-primary">END TURN</button>');
+                    $('#end_turn').click(function(){RiskGame.getInstance().newTurn();});
 
-        this.newTurn();
+                    RiskGame.getInstance().newTurn();
+                }
+            },
+            error: function() {
+                alert('error when start game');
+            }
+        });
+        $(this).hide();
+
+        return false;
     };//startGame()
 
 
@@ -46,7 +63,6 @@ function RiskGame(size){
      * @see startGame()
      */
     this.newTurn = function(){
-        RiskGame.riskMap.click = false;
         RiskGame.riskMap.setToDefault();
         //TODO erase this map and draw a new map recieved from the server
 
@@ -60,13 +76,12 @@ function RiskGame(size){
 }//RiskGame()
 
 /**
- * @static_method getInstance(size)
- * @param size
+ * @static_method getInstance()
  * @returns {null|RiskGame|*}
  */
-RiskGame.getInstance = function(size){
+RiskGame.getInstance = function(){
     if(null == RiskGame.instance)
-        RiskGame.instance = new RiskGame(size);
+        RiskGame.instance = new RiskGame();
     return this.instance;
 };//getInstance()
 
@@ -91,9 +106,6 @@ function Map(size){
     this.size = size;
     this.higlighted = [];
 
-    this.changes = {
-
-    };
 
     this.click = false;
 
@@ -104,10 +116,10 @@ function Map(size){
      * @method: drawMap()
      * @returns {*|jQuery|HTMLElement}
      */
-    this.drawMap = function(){
+    this.drawMap = function(jsonmap){
         var newTable = $('<table id="map"/>');
         for(i = 0; i < this.size; ++i){
-            newTable.append(this.createLine(i));
+            newTable.append(this.createLine(i,jsonmap));
         }
         return newTable;
     };
@@ -120,11 +132,14 @@ function Map(size){
      *
      * @see drawMap()
      */
-    this.createLine = function(i){
+    this.createLine = function(i,jsonmap){
+
         var newLine = $('<tr/>');
         for(var j = 0; j < this.size; ++j) {
-            //create td with id = "+i+j+"
-            newLine.append($('<td class="neutral" id="'+i+'-'+j+'">').html('2'));
+            var varId = i+'-'+j;
+            var owner = jsonmap[varId]['owner'];
+            var armies = jsonmap[varId]['armiesNbr'];
+            newLine.append($('<td class="'+owner+'" id="'+varId+'">').html(armies));
         }
         return newLine;
     };
@@ -152,7 +167,7 @@ function Map(size){
         var id = $(this).attr('id');
         id = id.split('-');
         var map = $(this).data('map-obj'); //map is the current instance of Map
-        console.log(map.click);
+        console.log("clickListener",map.click);
         if(!map.click) {
             map.click = true;
             map.onFirstClick(id[0],id[1]);
@@ -221,6 +236,7 @@ function Map(size){
         $('.player')
             .unbind('click')
             .click(this.clickListener);
+        this.click = false;
     };//setToDefault()
 
     /**
@@ -239,7 +255,6 @@ function Map(size){
         $('#' + line + '-' + column)
             .attr('class', 'attacked')
             .unbind('click');
-
     };//conquer()
 }
 //END class Map ################
