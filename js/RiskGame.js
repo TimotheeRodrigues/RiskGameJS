@@ -17,7 +17,6 @@
 function RiskGame(){
     RiskGame.instance = null;
     RiskGame.riskMap = null;
-
     /**
      * @method startGame()
      *
@@ -32,18 +31,21 @@ function RiskGame(){
             success: function(data){
                 if(typeof(data.size) == 'undefined'){
                     alert('error data.size');
-                }
-                else if(typeof(data.jsonmap) == 'undefined'){
+                } else if(typeof(data.jsonmap) == 'undefined'){
                     alert('error data.size');
-                }
-                else{
+                } else if(typeof(data.reinforcement) == 'undefined'){
+                    alert('error data.reinforcement');
+                } else{
                     RiskGame.riskMap = new Map(data.size);
-
-                    $('#riskgame').append(RiskGame.riskMap.drawMap(data.jsonmap))
+                    RiskGame.riskMap.reinforcement = data.reinforcement;
+                    $('#riskgame')
+                        .append('<div id="reinforcement-div">reinforcement: ' +
+                            '<h3 id="reinforcement">' +RiskGame.riskMap.reinforcement +
+                            '</h3></div>')
+                        .append(RiskGame.riskMap.drawMap(data.jsonmap))
                         .append('<button id="end_turn" type="button" ' +
                             'class="btn btn-primary">END TURN</button>');
                     $('#end_turn').click(function(){RiskGame.getInstance().newTurn();});
-
                     RiskGame.getInstance().newTurn();
                 }
             },
@@ -68,9 +70,9 @@ function RiskGame(){
 
         $('.attacked').attr('class', 'player');//TODO just to test
         //adds a clickListener to the .player buttons
-        $('.player')
-            .data('map-obj', RiskGame.riskMap)
-            .click(RiskGame.riskMap.clickListener);
+
+
+        RiskGame.riskMap.placeReinforcement();
     };//newTurn()
 
 }//RiskGame()
@@ -105,7 +107,7 @@ RiskGame.getInstance = function(){
 function Map(size){
     this.size = size;
     this.higlighted = [];
-
+    this.reinforcement = 0;
 
     this.click = false;
 
@@ -138,7 +140,7 @@ function Map(size){
         for(var j = 0; j < this.size; ++j) {
             var varId = i+'-'+j;
             var owner = jsonmap[varId]['owner'];
-            var armies = jsonmap[varId]['armiesNbr'];
+            var armies = jsonmap[varId]['armies'];
             newLine.append($('<td class="'+owner+'" id="'+varId+'">').html(armies));
         }
         return newLine;
@@ -256,6 +258,50 @@ function Map(size){
             .attr('class', 'attacked')
             .unbind('click');
     };//conquer()
+
+    /**
+     * @method placeReinforcement()
+     * @see newTurn()
+     */
+    this.placeReinforcement = function(){
+
+        $('.player')
+            .unbind('click')
+            .data('current-obj', this)
+            .click(function() {
+                var map = $(this).data('current-obj');
+                var id = $(this).attr('id');
+                $.ajax({
+                    method: 'POST',
+                    url: 'php/reinforcement.php',
+                    data: {'id': id},
+                    dataType: 'json',
+                    success: function (data) {
+                    if (data.success == 'undefined'
+                        || data.armies == 'undefined'
+                        || data.reinforcement == 'undefined') {
+                        alert('error data.success/data.armies');
+                    } else if (data.success == true) {
+                        $('#'+id).html(data.armies);
+                        map.reinforcement = data.reinforcement;
+                        console.log(id, data.armies);
+                        $('#reinforcement').html(map.reinforcement);
+                        if(map.reinforcement != 0)
+                            map.placeReinforcement();
+                        else {
+                            $('.player')
+                                .data('map-obj', RiskGame.riskMap)
+                                .click(RiskGame.riskMap.clickListener);
+                        }
+                    }
+                    },
+                    error: function() {
+                        alert('error when place reinforcement');
+                    }
+                });
+                return false;
+            });
+    };
 }
 //END class Map ################
 //##############################

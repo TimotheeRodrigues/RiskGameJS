@@ -5,12 +5,18 @@ header('Cache-Control: no-cache, must-revalidate');
 header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
 header('Content-type: application/json');
 
-$size = 10;
+session_start();
 
-$map = new Map(['size'=>$size]);
+$size = 10;
+$_SESSION['player'] = new Player(['type'=>'player']);
+$_SESSION['map'] = new Map(['size'=>$size, 'player' => $_SESSION['player']]);
+$_SESSION['map']->placePlayer($_SESSION['player']);
+$_SESSION['map']->placePlayer(new Player(['type'=>'cpu']));
 
 $obj = new stdClass();
 $obj->size = $size;
-$obj->jsonmap = $map->getToArray();
+$_SESSION['player']->countReinforcement();
+$obj->reinforcement = $_SESSION['player']->getReinforcement();
+$obj->jsonmap = $_SESSION['map']->getToArray();
 
 echo json_encode($obj);
