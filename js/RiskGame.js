@@ -45,7 +45,7 @@ function RiskGame(){
                         .append(RiskGame.riskMap.drawMap(data.jsonmap))
                         .append('<button id="end_turn" type="button" ' +
                             'class="btn btn-primary">END TURN</button>');
-                    $('#end_turn').click(function(){RiskGame.getInstance().newTurn();});
+                    $('#end_turn').click(function(){RiskGame.getInstance().endTurn();});
                     RiskGame.getInstance().newTurn();
                 }
             },
@@ -65,16 +65,44 @@ function RiskGame(){
      * @see startGame()
      */
     this.newTurn = function(){
+        RiskGame.riskMap.defenders = [];
         RiskGame.riskMap.setToDefault();
-        //TODO erase this map and draw a new map recieved from the server
-
-        $('.attacked').attr('class', 'player');//TODO just to test
-        //adds a clickListener to the .player buttons
-
-
         RiskGame.riskMap.placeReinforcement();
     };//newTurn()
 
+    /**
+     * @method endTurn
+     */
+    this.endTurn = function(){
+        $.ajax({
+            method: 'post',
+            url: 'php/endTurn.php',
+            dataType: 'json',
+            success: function(data){
+                if(typeof(data.jsonmap) == 'undefined'){
+                    alert('error data.jsonmap');
+                } else if(typeof(data.reinforcement) == 'undefined'){
+                    alert('error data.reinforcement');
+                } else{
+                    RiskGame.riskMap.reinforcement = data.reinforcement;
+                    $('#riskgame')
+                        .empty()
+                        .append('<div id="reinforcement-div">reinforcement: ' +
+                            '<h3 id="reinforcement">' +RiskGame.riskMap.reinforcement +
+                            '</h3></div>')
+                        .append(RiskGame.riskMap.drawMap(data.jsonmap))
+                        .append('<button id="end_turn" type="button" ' +
+                            'class="btn btn-primary">END TURN</button>');
+                    $('#end_turn').click(function(){RiskGame.getInstance().endTurn();});
+                    RiskGame.getInstance().newTurn();
+                }
+            },
+            error: function() {
+                alert('error when end turn');
+            }
+        });
+        return false;
+    }
 }//RiskGame()
 
 /**
@@ -110,7 +138,8 @@ function Map(size){
     this.reinforcement = 0;
 
     this.click = false;
-
+    this.attacker = null;
+    this.defenders = [];
 
 
 
@@ -167,11 +196,12 @@ function Map(size){
      */
     this.clickListener = function(){
         var id = $(this).attr('id');
-        id = id.split('-');
         var map = $(this).data('map-obj'); //map is the current instance of Map
         console.log("clickListener",map.click);
-        if(!map.click) {
+        console.log(map.defenders[id]);
+        if(!map.click && map.defenders[id] === undefined) {
             map.click = true;
+            id = id.split('-');
             map.onFirstClick(id[0],id[1]);
         }else{
             map.click = false;
@@ -190,7 +220,7 @@ function Map(size){
     this.onFirstClick = function(line,column){
         var i = parseInt(line);
         var j = parseInt(column);
-
+        this.attacker = i+'-'+j;
         if(0 <= j-1){
             this.highlight(i, j-1);
         }
@@ -215,8 +245,7 @@ function Map(size){
         $(id)
             .css('opacity', '0.5')
             .unbind('click')
-            .data('pos-line', line)
-            .data('pos-column', column)
+            .data('id', line+'-'+column)
             .data('current-obj', this)
             .click(this.conquer);
         this.higlighted.push(id);
@@ -235,10 +264,13 @@ function Map(size){
                 .unbind('click');
         }
         this.higlighted = []; //initialize the array
+        this.click = false;
+        if(this.attacker != null)
+            this.attacker = null;
         $('.player')
             .unbind('click')
+            .data('map-obj', this)
             .click(this.clickListener);
-        this.click = false;
     };//setToDefault()
 
     /**
@@ -250,13 +282,37 @@ function Map(size){
      *         The server will return the state of the new map.
      */
     this.conquer = function(){
-        var line = $(this).data('pos-line');
-        var column = $(this).data('pos-column');
-        var obj = $(this).data('current-obj');
-        obj.setToDefault();
-        $('#' + line + '-' + column)
-            .attr('class', 'attacked')
-            .unbind('click');
+        var id = $(this).data('id');
+        var map = $(this).data('current-obj');
+        map.defenders[id] = id;
+        console.log('attacker', map.attacker);
+        console.log('defender', map.defenders[id]);
+        $.ajax({
+            method: 'POST',
+            url: 'php/attack.php',
+            data: {'attacker': map.attacker,
+                   'defender': map.defenders[id]},
+            dataType: 'json',
+            success: function(data){
+                if (data.success == 'undefined'
+                || data.attacker == 'undefined'
+                || data.defender == 'undefined')
+                    alert('error data.success/attacker/defenders');
+                else if(data.success){
+                    $('#'+map.attacker).html(data.attacker.armies);
+                    $('#'+map.defenders[id])
+                        .html(data.defender.armies)
+                        .attr('class', data.defender.owner);
+
+                }else{
+                    $('#'+map.attacker).html(data.attacker.armies);
+                }
+                RiskGame.riskMap.setToDefault();
+            },
+            error: function(){
+                alert('error when attack');
+            }
+        })
     };//conquer()
 
     /**
@@ -277,23 +333,23 @@ function Map(size){
                     data: {'id': id},
                     dataType: 'json',
                     success: function (data) {
-                    if (data.success == 'undefined'
-                        || data.armies == 'undefined'
-                        || data.reinforcement == 'undefined') {
-                        alert('error data.success/data.armies');
-                    } else if (data.success == true) {
-                        $('#'+id).html(data.armies);
-                        map.reinforcement = data.reinforcement;
-                        console.log(id, data.armies);
-                        $('#reinforcement').html(map.reinforcement);
-                        if(map.reinforcement != 0)
-                            map.placeReinforcement();
-                        else {
-                            $('.player')
-                                .data('map-obj', RiskGame.riskMap)
-                                .click(RiskGame.riskMap.clickListener);
+                        if (data.success == 'undefined'
+                            || data.armies == 'undefined'
+                            || data.reinforcement == 'undefined') {
+                            alert('error data.success/data.armies');
+                        } else if (data.success == true) {
+                            $('#'+id).html(data.armies);
+                            map.reinforcement = data.reinforcement;
+                            console.log(id, data.armies);
+                            $('#reinforcement').html(map.reinforcement);
+                            if(map.reinforcement != 0)
+                                map.placeReinforcement();
+                            else {
+                                $('.player')
+                                    .data('map-obj', RiskGame.riskMap)
+                                    .click(RiskGame.riskMap.clickListener);
+                            }
                         }
-                    }
                     },
                     error: function() {
                         alert('error when place reinforcement');

@@ -81,6 +81,7 @@ $(document).ready(function() {
                     /*afficher le message "data.message" */
                     /*afficher un formulaire de connexion*/
 		            $('#form-login').fadeIn();
+					$('#riskgame').empty();
                 }
 
 				if (typeof(data.message) != 'undefined'){
