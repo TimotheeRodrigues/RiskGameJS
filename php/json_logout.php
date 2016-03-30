@@ -30,7 +30,7 @@
 	// /!\ ici on simule qu'on l'a trouvé en BD
 
 	$obj->success = true;
-	$obj->message = "Tu es maintenant deconnecte";
+	$obj->message = "You are now disconected";
 
 	echo json_encode($obj);
 

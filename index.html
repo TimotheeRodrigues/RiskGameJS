@@ -54,12 +54,11 @@
                       class="navbar-form navbar-right"
                       role="form" method="post"
                       action="php/json_login.php" style="display: none">
-
                     <div class="form-group">
                             <input type="text"
-                                placeholder="Email"
+                                placeholder="Nickname"
                                 class="form-control"
-                                id="email" name="email">
+                                id="nickname" name="nickname">
                     </div>
                     <div class="form-group">
                         <input type="password"
@@ -98,6 +97,38 @@
             </div>
         </div>
         <div id="riskgame"></div>
+        <form id="form-register"
+              role="form"
+              method="post"
+              action="php/json_register.php"
+              style="display:none">
+            <h3>Register</h3>
+            <div class="form-group">
+                <input type="text"
+                       placeholder="Nickname"
+                       class="form-control"
+                       id="nickname-register" name="nickname">
+            </div>
+            <div class="form-group">
+                <input type="text"
+                       placeholder="Email"
+                       class="form-control"
+                       id="email-register" name="email">
+            </div>
+            <div class="form-group">
+                <input type="password"
+                       placeholder="Password"
+                       class="form-control"
+                       id="password-register" name="password">
+            </div>
+            <div class="form-group">
+                <input type="password"
+                       placeholder="Confirm Password"
+                       class="form-control"
+                       id="password-confirm" name="password-confirm">
+            </div>
+            <button type="submit" class="btn btn-success">Sign in</button>
+        </form>
         <script src="js/vendor/jquery-1.11.2.min.js"></script>
         <script src="js/vendor/bootstrap.min.js"></script>
         <script src="js/main.js"></script>

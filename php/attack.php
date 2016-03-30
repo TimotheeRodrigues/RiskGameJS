@@ -28,7 +28,7 @@ if($attacker->getArmies() > 1){
     $defArmies = $defender->getArmies();
     if($attacker->getOwner() != $defender->getOwner()) {
         $attPts = $attArmies * rand(0, 20);
-        $defPts = $defender * rand(0, 20);
+        $defPts = $defender * rand(0, 30);
 
         if ($attPts > $defPts) {
             $defender->changeOwner($attacker->getOwner());

@@ -29,8 +29,10 @@ class Player
 
     function countReinforcement(){
         $count = count($this->territories);
-        $count = floor($count * 1.5);
-        $count += 5;
+        $count += floor($count * 1.5);
+        if($count < 5){
+            $count = 5;
+        }
         $this->reinforcement = $count;
     }
 

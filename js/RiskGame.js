@@ -2,8 +2,6 @@
  * @class RiskGame()
  *
  * @class Map()
- *
- * @class Territory()
  */
 
 

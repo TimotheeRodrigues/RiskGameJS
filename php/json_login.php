@@ -6,7 +6,7 @@
 	session_start();
 
 	// Regarder ce qu'il y a dans ces champs:	
-	// $_POST['email'];
+	// $_POST['nickname'];
 	// $_POST['password'];
 	// s'ils sont valides, vérifier s'il existe en base de données
 
@@ -15,7 +15,7 @@
 	// /!\ ici on simule qu'on l'a trouvé en BD
 	
 
-	$_SESSION['connecte'] = "Timothee";
+	$_SESSION['connecte'] = $_POST['nickname'];
 
 	$obj->success = true;
 	$obj->message = "Bonjour ".$_SESSION['connecte'];
