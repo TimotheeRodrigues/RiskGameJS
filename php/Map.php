@@ -13,12 +13,13 @@ class Map{
     private $players = array();
 
     private function initializeMap(){
-        for($i = 0; $i < $this->size; ++$i){
-            for($j = 0; $j < $this->size; ++$j){
+        for($i = 0; $i < $this->size; ++$i) {
+            for ($j = 0; $j < $this->size; ++$j) {
                 $id = $i . '-' . $j;
                 $this->map[$id] = new Territory();
             }
         }
+
     }//initializeMap()
 
     function placePlayer($player){

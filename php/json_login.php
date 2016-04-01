@@ -18,7 +18,7 @@
 	$_SESSION['connecte'] = $_POST['nickname'];
 
 	$obj->success = true;
-	$obj->message = "Bonjour ".$_SESSION['connecte'];
+	$obj->message = "Hello ".$_SESSION['connecte'];
 
 	echo json_encode($obj);
 
