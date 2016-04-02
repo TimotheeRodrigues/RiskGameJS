@@ -42,7 +42,7 @@ function RiskGame(){
                             '</h3></div>')
                         .append(RiskGame.riskMap.drawMap(data.jsonmap))
                         .append('<button id="end_turn" type="button" ' +
-                            'class="btn btn-primary">END TURN</button>');
+                            'class="ui-btn ui-corner-all">END TURN</button>');
                     $('#end_turn').click(function(){RiskGame.getInstance().endTurn();});
                     RiskGame.getInstance().newTurn();
                 }
@@ -85,12 +85,12 @@ function RiskGame(){
                     RiskGame.riskMap.reinforcement = data.reinforcement;
                     $('#riskgame')
                         .empty()
-                        .append('<div id="reinforcement-div"><label>reinforcement: </label>' +
+                        .append('<div id="reinforcement-div">reinforcement: ' +
                             '<h3 id="reinforcement">' +RiskGame.riskMap.reinforcement +
                             '</h3></div>')
                         .append(RiskGame.riskMap.drawMap(data.jsonmap))
                         .append('<button id="end_turn" type="button" ' +
-                            'class="btn btn-primary">END TURN</button>');
+                            'class="ui-btn ui-corner-all">END TURN</button>');
                     $('#end_turn').click(function(){RiskGame.getInstance().endTurn();});
                     RiskGame.getInstance().newTurn();
                 }
@@ -289,12 +289,12 @@ function Map(size){
             method: 'POST',
             url: 'php/attack.php',
             data: {'attacker': map.attacker,
-                   'defender': map.defenders[id]},
+                'defender': map.defenders[id]},
             dataType: 'json',
             success: function(data){
                 if (data.success == 'undefined'
-                || data.attacker == 'undefined'
-                || data.defender == 'undefined')
+                    || data.attacker == 'undefined'
+                    || data.defender == 'undefined')
                     alert('error data.success/attacker/defenders');
                 else if(data.success){
                     $('#'+map.attacker).html(data.attacker.armies);
