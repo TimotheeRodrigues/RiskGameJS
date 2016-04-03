@@ -5,15 +5,17 @@
 	
 	session_start();
 
-	// Regarder ce qu'il y a dans ces champs:	
-	// $_POST['nickname'];
-	// $_POST['password'];
-	// s'ils sont valides, vérifier s'il existe en base de données
-
 	$obj = new stdClass();
 
-	// /!\ ici on simule qu'on l'a trouvé en BD
-	
+	// Regarder ce qu'il y a dans ces champs:
+	if(!isset($_POST['nickname']) || !isset($_POST['password'])){
+		$obj->message = "error";
+		echo json_encode($obj);
+		die;
+	}
+
+	$nickname = $_POST['nickname'];
+	$passwd = $_POST['password'];
 
 	$_SESSION['connecte'] = $_POST['nickname'];
 

@@ -9,6 +9,12 @@ $(document).ready(function() {
         success: function(data) {
             if (data.est_connecte) {
                 $('#form-logout').fadeIn();
+                if (data.state == 'waiting'){
+                    createStartButton();
+                }else if (data.state == 'in-game'){
+                    var riskGame = RiskGame.getInstance();
+                    riskGame.startGame();
+                }
             } else {
                 $('#form-login').fadeIn();
                 $('#form-register').fadeIn();

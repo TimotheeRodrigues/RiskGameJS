@@ -37,12 +37,9 @@ function RiskGame(){
                     RiskGame.riskMap = new Map(data.size);
                     RiskGame.riskMap.reinforcement = data.reinforcement;
                     $('#riskgame')
-                        .append('<div id="reinforcement-div">reinforcement: ' +
-                            '<h3 id="reinforcement">' +RiskGame.riskMap.reinforcement +
-                            '</h3></div>')
+                        .append(RiskGame.getInstance().displayReinforcement())
                         .append(RiskGame.riskMap.drawMap(data.jsonmap))
-                        .append('<button id="end_turn" type="button" ' +
-                            'class="ui-btn ui-corner-all">END TURN</button>');
+                        .append(RiskGame.getInstance().createEndTurnButton());
                     $('#end_turn').click(function(){RiskGame.getInstance().endTurn();});
                     RiskGame.getInstance().newTurn();
                 }
@@ -70,6 +67,11 @@ function RiskGame(){
 
     /**
      * @method endTurn
+     *
+     *      When the server has finished its turn
+     *      we display the reinforcements availables
+     *      we draw the new map received
+     *      we start a new turn
      */
     this.endTurn = function(){
         $.ajax({
@@ -85,12 +87,9 @@ function RiskGame(){
                     RiskGame.riskMap.reinforcement = data.reinforcement;
                     $('#riskgame')
                         .empty()
-                        .append('<div id="reinforcement-div">reinforcement: ' +
-                            '<h3 id="reinforcement">' +RiskGame.riskMap.reinforcement +
-                            '</h3></div>')
+                        .append(RiskGame.getInstance().displayReinforcement())
                         .append(RiskGame.riskMap.drawMap(data.jsonmap))
-                        .append('<button id="end_turn" type="button" ' +
-                            'class="ui-btn ui-corner-all">END TURN</button>');
+                        .append(RiskGame.getInstance().createEndButton);
                     $('#end_turn').click(function(){RiskGame.getInstance().endTurn();});
                     RiskGame.getInstance().newTurn();
                 }
@@ -100,7 +99,28 @@ function RiskGame(){
             }
         });
         return false;
-    }
+    };
+
+    /**
+     * @method createEndButton
+     * @returns {string|*}
+     */
+    this.createEndTurnButton = function(){
+        $button = '<button id="end_turn" type="button" ' +
+            'class="ui-btn ui-corner-all ui-btn-b">END TURN</button>';
+        return $button;
+    };
+
+    /**
+     * @method displayReinforcement
+     * @returns {string}
+     */
+    this.displayReinforcement = function(){
+        var reinforcement = '<div id="reinforcement-div"><label>reinforcement: </label>' +
+            '<h3 id="reinforcement">' +RiskGame.riskMap.reinforcement +
+            '</h3></div>';
+        return reinforcement;
+    };
 }//RiskGame()
 
 /**
@@ -155,7 +175,7 @@ function Map(size){
 
 
     /**
-     * method: createLine(i)
+     * @method createLine(i)
      * @param i  (the line number)
      * @returns {*|jQuery|HTMLElement}
      *
@@ -174,19 +194,6 @@ function Map(size){
     };
 
 
-    /**
-     * @method: placePlayer(playerType)
-     * @param playerType  (could be : 'player', 'cpu')
-     *
-     * Place the player randomly
-     */
-    this.placePlayer = function(playerType) {
-        var randomLine = Math.floor((Math.random() * this.size));
-        var randomColumn = Math.floor((Math.random() * this.size));
-        var id = '#' + randomLine + '-' + randomColumn;
-        $(id).attr('class', playerType);
-    };
-
 
     /**
      * @method clickListener()
@@ -195,8 +202,6 @@ function Map(size){
     this.clickListener = function(){
         var id = $(this).attr('id');
         var map = $(this).data('map-obj'); //map is the current instance of Map
-        console.log("clickListener",map.click);
-        console.log(map.defenders[id]);
         if(!map.click && map.defenders[id] === undefined) {
             map.click = true;
             id = id.split('-');
@@ -275,16 +280,21 @@ function Map(size){
      * @method conquer()
      * @see highlight(line, column)
      *
-     * @note   Should add the territory that we want to conquer in an array.
-     *         This array will be sent to the server when END TURN is called.
-     *         The server will return the state of the new map.
+     *      Send to the server the attacking territory and the defending territory.
+     *
+     *      If the attack has succeeded, half of the attacking armies will be sent
+     *      to the conquered territory.
+     *      Else if the attack has failed, a third of the attacking army will be
+     *      destroyed.
+     *
+     *      This function is also used when the player wants to move armies
+     *      on is own territory. In this case half of the army to move will be
+     *      sent (added) to the destination.
      */
     this.conquer = function(){
         var id = $(this).data('id');
         var map = $(this).data('current-obj');
         map.defenders[id] = id;
-        console.log('attacker', map.attacker);
-        console.log('defender', map.defenders[id]);
         $.ajax({
             method: 'POST',
             url: 'php/attack.php',
@@ -338,7 +348,6 @@ function Map(size){
                         } else if (data.success == true) {
                             $('#'+id).html(data.armies);
                             map.reinforcement = data.reinforcement;
-                            console.log(id, data.armies);
                             $('#reinforcement').html(map.reinforcement);
                             if(map.reinforcement != 0)
                                 map.placeReinforcement();
@@ -355,7 +364,7 @@ function Map(size){
                 });
                 return false;
             });
-    };
+    };//placeReinforcement()
 }
 //END class Map ################
 //##############################

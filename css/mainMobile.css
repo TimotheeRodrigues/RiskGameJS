@@ -14,10 +14,6 @@
     display: table;
 }
 
-#form-logout{
-    margin-right: 30px; /* TODO */
-}
-
 #content{
     padding: inherit;
     padding-bottom: 10px;
@@ -46,11 +42,27 @@
     margin-bottom: 20px;
 }
 
+
+
+
 #riskgame{
     margin: 0 auto;
     margin-top: 10px;
     display: table;
 }
+
+#reinforcement-div {
+    margin: 10px;
+}
+
+#reinforcement-div label {
+    display: inline;
+}
+
+#reinforcement {
+    display: inline;
+}
+
 
 #map{
     border-spacing: inherit;

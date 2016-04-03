@@ -22,11 +22,24 @@
 
 
 
-
 #riskgame{
     margin: 0 auto;
     display: table;
 }
+
+
+#reinforcement-div {
+    margin: 10px;
+}
+
+#reinforcement-div label {
+    display: inline;
+}
+
+#reinforcement {
+    display: inline;
+}
+
 
 #map td {
     height: 50px;
