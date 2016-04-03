@@ -8,19 +8,16 @@
 	$obj = new stdClass();
 
 	// Regarder ce qu'il y a dans ces champs:
-	if(!isset($_POST['nickname']) || !isset($_POST['password'])){
-		$obj->message = "error";
+	if($_POST['nickname'] == '' || $_POST['password'] == ''){
+		$obj->success = false;
+		$obj->message = "Bad login...";
 		echo json_encode($obj);
-		die;
+	}else{
+		$_SESSION['connecte'] = $_POST['nickname'];
+
+		$obj->success = true;
+		$obj->message = "Hello " . $_SESSION['connecte'];
+
+		echo json_encode($obj);
 	}
-
-	$nickname = $_POST['nickname'];
-	$passwd = $_POST['password'];
-
-	$_SESSION['connecte'] = $_POST['nickname'];
-
-	$obj->success = true;
-	$obj->message = "Hello ".$_SESSION['connecte'];
-
-	echo json_encode($obj);
 
